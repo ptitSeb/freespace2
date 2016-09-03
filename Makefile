@@ -81,6 +81,14 @@ endif
 
 %.o: %.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
+%.fs2.o: %.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
+%.fs1.o: %.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
+%.fs2.demo.o: %.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
+%.fs1.demo.o: %.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
 	
 CODE_SOURCES =./src/anim/animplay.cpp \
 	./src/anim/packunpack.cpp \
@@ -335,10 +343,17 @@ ifeq ($(strip $(HAVE_GLES)),true)
 	CODE_SOURCES +=./src/graphics/eglport.cpp
 endif
 
+POSTFIX=fs2
+ifeq ($(strip $(FS1)), true)
+ POSTFIX=fs1
+endif
+ifeq ($(strip $(DEMO)), true)
+ POSTFIX=$(POSTFIX).demo
+endif
 
-CODE_OBJECTS=$(CODE_SOURCES:.cpp=.o)
-FS_OBJECTS=$(FS_SOURCES:.cpp=.o)
-FONTTOOL_OBJECTS=$(FONTTOOL_SOURCES:.cpp=.o)
+CODE_OBJECTS=$(CODE_SOURCES:.cpp=.$(POSTFIX).o)
+FS_OBJECTS=$(FS_SOURCES:.cpp=.$(POSTFIX).o)
+FONTTOOL_OBJECTS=$(FONTTOOL_SOURCES:.cpp=.$(POSTFIX).o)
 
 all: $(FS_BINARY)
 
