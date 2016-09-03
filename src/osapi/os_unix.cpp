@@ -154,6 +154,9 @@
 #include "freespace.h"
 #include "osregistry.h"
 #include "cmdline.h"
+#ifdef HAVE_GLES
+#include "eglport.h"
+#endif
 
 // ----------------------------------------------------------------------------------------------------
 // OSAPI DEFINES/VARS
@@ -298,6 +301,9 @@ void os_deinit()
 {
 	SDL_DestroyMutex(Os_lock);
 
+	#ifdef HAVE_GLES
+	EGL_Close();
+	#endif
 	SDL_Quit();
 }
 

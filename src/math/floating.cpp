@@ -128,7 +128,11 @@ float fl_isqrt_c( float x )
 
 	int t1, t2, t3;
 	t1 = timer_get_microseconds();
+	#ifdef PANDORA
+	float r1 =  1.0f / sqrt(x);
+	#else
 	float r1 =  1.0f / (float)sqrt((double)x);
+	#endif
 	t2 = timer_get_microseconds();
 //	float r2 = fl_isqrt_asm(x);
 	t3 = timer_get_microseconds();	

@@ -289,6 +289,9 @@ cmdline_parm help("--help", "-h", NULL);
 cmdline_parm no_grab("--nograb", "-g", NULL);
 cmdline_parm fs_version("--version", "-v", NULL);
 cmdline_parm no_movies("--nomovies", "-n", NULL);
+#ifdef PANDORA
+cmdline_parm no_shouldermb("--noshouldermb", "-B", NULL);
+#endif
 #endif
 
 int Cmdline_multi_stream_chat_to_file = 0;
@@ -318,6 +321,9 @@ int Cmdline_timeout = -1;
 int Cmdline_no_grab = 0;
 int Cmdline_play_movies = 1;
 int Cmdline_fullscreen = 0;
+#ifdef PANDORA
+int Cmdline_noshouldermb = 0;
+#endif
 #endif
 
 int Cmdline_window = 0;
@@ -600,7 +606,9 @@ void print_instructions()
 	printf("     [-t | --timeout]        Multiplayer game timeout\n");
 	printf("     [-P | --pofspew]        Save model info to pofspew.txt\n");
 	printf("     [-M | --coords]         Show coordinates of the mouse cursor\n\n");
-
+#ifdef PANDORA
+	printf("     [-B | --noshouldermb]   No Shoulder Mouse Buttons\n\n");
+#endif
 	printf("Freespace 2 v%d.%02d -- Linux Client v%d.%02d\n\n", FS_VERSION_MAJOR, FS_VERSION_MINOR, FS_UNIX_VERSION_MAJOR, FS_UNIX_VERSION_MINOR);
 
 	exit(0);
@@ -844,6 +852,12 @@ int parse_cmdline(char *cmdline)
 	if(no_movies.found()){
 		Cmdline_play_movies = 0;
 	}
+#ifdef PANDORA
+	// play movies?
+	if(no_shouldermb.found()){
+		Cmdline_noshouldermb = 1;
+	}
+#endif
 
 	// display game version
 	if(fs_version.found()){

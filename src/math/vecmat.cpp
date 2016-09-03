@@ -917,9 +917,15 @@ matrix *vm_angles_2_matrix(matrix *m,angles *a)
 	matrix * t;
 	float sinp,cosp,sinb,cosb,sinh,cosh;
 
+	#ifdef PANDORA
+	sinp = (float)sinf(a->p); cosp = (float)cosf(a->p);
+	sinb = (float)sinf(a->b); cosb = (float)cosf(a->b);
+	sinh = (float)sinf(a->h); cosh = (float)cosf(a->h);
+	#else
 	sinp = (float)sin(a->p); cosp = (float)cos(a->p);
 	sinb = (float)sin(a->b); cosb = (float)cos(a->b);
 	sinh = (float)sin(a->h); cosh = (float)cos(a->h);
+	#endif
 
 	t = sincos_2_matrix(m,sinp,cosp,sinb,cosb,sinh,cosh);
 
@@ -933,19 +939,38 @@ matrix *vm_angle_2_matrix(matrix *m, float a, int angle_index)
 	matrix * t;
 	float sinp,cosp,sinb,cosb,sinh,cosh;
 
-	sinp = (float)sin(0.0f);	cosp = (float)cos(0.0f);
-	sinb = (float)sin(0.0f);	cosb = (float)cos(0.0f);
-	sinh = (float)sin(0.0f);	cosh = (float)cos(0.0f);
+	#ifdef PANDORA
+	sinp = 0.0f;	cosp = 1.0f;
+	sinb = 0.0f;	cosb = 1.0f;
+	sinh = 0.0f;	cosh = 1.0f;
+	#else
+	sinp = (float)sinf(0.0f);	cosp = (float)cosf(0.0f);
+	sinb = (float)sinf(0.0f);	cosb = (float)cosf(0.0f);
+	sinh = (float)sinf(0.0f);	cosh = (float)cosf(0.0f);
+	#endif
 
 	switch (angle_index) {
 	case 0:
+		#ifdef PANDORA
+		sinp = sin(a); cosp = cos(a);
+		#else
 		sinp = (float)sin(a); cosp = (float)cos(a);
+		#endif
 		break;
 	case 1:
+		#ifdef PANDORA
+		sinb = sin(a); cosb = cos(a);
+		#else
 		sinb = (float)sin(a); cosb = (float)cos(a);
+		#endif
 		break;
+		
 	case 2:
+		#ifdef PANDORA
+		sinh = sin(a); cosh = cos(a);
+		#else
 		sinh = (float)sin(a); cosh = (float)cos(a);
+		#endif
 		break;
 	}
 

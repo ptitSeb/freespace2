@@ -178,6 +178,9 @@
 #include "timer.h"
 #include "osapi.h"
 #include "localize.h"
+#ifdef PANDORA
+#include "mouse.h"
+#endif
 
 #define KEY_BUFFER_SIZE 16
 
@@ -289,7 +292,7 @@ void FillSDLArray ()
 	SDLtoFS2[SDLK_x] = KEY_X;
 	SDLtoFS2[SDLK_y] = KEY_Y;
 	SDLtoFS2[SDLK_z] = KEY_Z;
-
+#ifndef PANDORA
 	if (Lcl_gr) {
 		SDLtoFS2[SDLK_WORLD_63] = KEY_MINUS;
 		SDLtoFS2[SDLK_WORLD_20] = KEY_EQUAL;
@@ -304,7 +307,9 @@ void FillSDLArray ()
 
 		SDLtoFS2[SDLK_CARET] = KEY_LAPOSTRO;
 		SDLtoFS2[SDLK_WORLD_68] = KEY_RAPOSTRO;
-	} else {
+	} else 
+#endif
+	{
 		SDLtoFS2[SDLK_MINUS] = KEY_MINUS;
 		SDLtoFS2[SDLK_EQUALS] = KEY_EQUAL;
 		SDLtoFS2[SDLK_SLASH] = KEY_DIVIDE; // No idea - DDOI
@@ -799,6 +804,7 @@ void key_mark( uint code, int state, uint latency )
 		code = KEY_SLASH;
 	}
 
+#ifndef PANDORA
 	if(Lcl_fr){
 		switch (code) {
 		case KEY_A:
@@ -829,6 +835,7 @@ void key_mark( uint code, int state, uint latency )
 			code = KEY_SEMICOL;
 			break;
 		}
+
 #if !defined(PLAT_UNIX) || defined(__APPLE__)
 	} else if(Lcl_gr){
 		switch (code) {
@@ -842,7 +849,23 @@ void key_mark( uint code, int state, uint latency )
 		}
 #endif
 	}
-
+#else
+extern int Cmdline_noshouldermb;
+	if (!Cmdline_noshouldermb) {
+		if (code == KEY_RCTRL) {
+			// Left click button...
+			mouse_mark_button(MOUSE_LEFT_BUTTON, state);
+			LEAVE_CRITICAL_SECTION(&key_lock);
+			return;
+		}
+		if (code == KEY_RSHIFT) {
+			// Right click button...
+			mouse_mark_button(MOUSE_RIGHT_BUTTON, state);
+			LEAVE_CRITICAL_SECTION(&key_lock);
+			return;
+		}
+	}
+#endif
 	if ( (code == 0xc5) && !Key_running_NT ) {
 		key_turn_off_numlock();
 	}

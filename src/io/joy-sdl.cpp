@@ -75,6 +75,9 @@ void joy_get_caps (int max)
 				for (int i = 0; i < SDL_JoystickNumAxes(joy); i++)
 				{
 					joystick.axis_valid[i] = 1;
+					#ifdef PANDORA
+					joystick.axis_valid[i+2] = 1;
+					#endif
 				}
 			}
 			SDL_JoystickClose (joy);
@@ -383,7 +386,12 @@ int joy_init()
 	Joy_inited = 1;
 	n = SDL_NumJoysticks ();
 
+	#ifdef PANDORA
+	if (n>0) Cur_joystick=0;
+	else
+	#else
 	Cur_joystick = os_config_read_uint (NULL, "CurrentJoystick", JOYSTICKID1);
+	#endif
 
 	joy_get_caps(n);
 
@@ -396,6 +404,7 @@ int joy_init()
 	if (sdljoy == NULL) {
 		mprintf(("Unable to init joystick %d\n", Cur_joystick));
 	}
+	
 	
 	joy_flush ();
 
@@ -430,11 +439,22 @@ int joystick_read_raw_axis(int num_axes, int *axis)
 	num = SDL_JoystickNumAxes(sdljoy);
 	
 	for (i = 0; i < num_axes; i++) {
+		#ifdef PANDORA
+		if ((i > 1) && (i < 4)) {
+			if (i==3)
+				axis[i] = SDL_JoystickGetAxis(sdljoy, 0) + 32768;
+			else
+				axis[i] = 32768 - SDL_JoystickGetAxis(sdljoy, 1);
+		} else {
+			axis[i] = 32768;
+		}
+		#else
 		if (i < num) {
 			axis[i] = SDL_JoystickGetAxis(sdljoy, i) + 32768;
 		} else {
 			axis[i] = 32768;
 		}
+		#endif
 	}
 	
 	return 1;

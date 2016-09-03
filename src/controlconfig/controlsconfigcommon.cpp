@@ -433,19 +433,35 @@ config_item Control_config[CCFG_MAX + 1] = {
 	{ KEY_ALTED |               KEY_M,				-1, COMPUTER_TAB,	"Toggle Auto Speed Matching", CC_TYPE_TRIGGER, -1, -1, 0 },
 
 	// weapons
+	#ifdef PANDORA
+	{                           KEY_LCTRL,			0,	 WEAPON_TAB,	"Fire Primary Weapon", CC_TYPE_CONTINUOUS, KEY_RCTRL, -1, 0 },
+	{                           KEY_SPACEBAR,	    1,  WEAPON_TAB,	"Fire Secondary Weapon", CC_TYPE_CONTINUOUS, KEY_SHIFTED | KEY_RCTRL, -1, 0 },
+	{                           KEY_PERIOD,		-1, WEAPON_TAB,	"Cycle Forward Primary Weapon", CC_TYPE_TRIGGER, KEY_2, -1, 0 },
+	{                           KEY_COMMA,			-1, WEAPON_TAB,	"Cycle Backward Primary Weapon", CC_TYPE_TRIGGER, KEY_3, -1, 0 },
+	{                           KEY_DIVIDE,		-1, WEAPON_TAB,	"Cycle Secondary Weapon Bank", CC_TYPE_TRIGGER, KEY_W, -1, 0 },
+	{             KEY_SHIFTED | KEY_DIVIDE,		-1, WEAPON_TAB,	"Cycle Secondary Weapon Firing Rate", CC_TYPE_TRIGGER, KEY_Q, -1, 0 },
+	#else
 	{                           KEY_LCTRL,			0,	 WEAPON_TAB,	"Fire Primary Weapon", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{                           KEY_SPACEBAR,		1,  WEAPON_TAB,	"Fire Secondary Weapon", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{                           KEY_PERIOD,		-1, WEAPON_TAB,	"Cycle Forward Primary Weapon", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_COMMA,			-1, WEAPON_TAB,	"Cycle Backward Primary Weapon", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_DIVIDE,		-1, WEAPON_TAB,	"Cycle Secondary Weapon Bank", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{             KEY_SHIFTED | KEY_DIVIDE,		-1, WEAPON_TAB,	"Cycle Secondary Weapon Firing Rate", CC_TYPE_TRIGGER, -1, -1, 0 },
+	#endif
 	{                           KEY_X,				3,	 WEAPON_TAB,	"Launch Countermeasure", CC_TYPE_TRIGGER, -1, -1, 0 },
 
 	// controls
+	#ifdef PANDORA
+	{                           KEY_A,				-1, SHIP_TAB,		"Forward Thrust", CC_TYPE_CONTINUOUS, KEY_UP, -1, 0 },
+	{                           KEY_Z,			-1, SHIP_TAB,		"Reverse Thrust", CC_TYPE_CONTINUOUS, KEY_DOWN, -1, 0 },
+	{                           KEY_PAD7,			-1, SHIP_TAB,		"Bank Left", CC_TYPE_CONTINUOUS, KEY_LEFT, -1, 0 },
+	{                           KEY_PAD9,			-1, SHIP_TAB,		"Bank Right", CC_TYPE_CONTINUOUS, KEY_RIGHT, -1, 0 },
+	#else
 	{                           KEY_A,				-1, SHIP_TAB,		"Forward Thrust", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{                           KEY_Z,				-1, SHIP_TAB,		"Reverse Thrust", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{                           KEY_PAD7,			-1, SHIP_TAB,		"Bank Left", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{                           KEY_PAD9,			-1, SHIP_TAB,		"Bank Right", CC_TYPE_CONTINUOUS, -1, -1, 0 },
+	#endif
 	{                           KEY_PAD8,			-1, SHIP_TAB,		"Pitch Forward", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{                           KEY_PAD2,			-1, SHIP_TAB,		"Pitch Backward", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{                           KEY_PAD4,			-1, SHIP_TAB,		"Turn Left", CC_TYPE_CONTINUOUS, -1, -1, 0 },
@@ -453,11 +469,20 @@ config_item Control_config[CCFG_MAX + 1] = {
 
 	// throttle controls
 	{                           KEY_BACKSP,		-1, SHIP_TAB,		"Set Throttle to Zero", CC_TYPE_TRIGGER, -1, -1, 0 },
+	#ifdef PANDORA
+	{                           KEY_SLASH,			-1, SHIP_TAB,		"Set Throttle to Max", CC_TYPE_TRIGGER, KEY_0, -1, 0 },
+	#else
 	{                           KEY_SLASH,			-1, SHIP_TAB,		"Set Throttle to Max", CC_TYPE_TRIGGER, -1, -1, 0 },
+	#endif
 	{                           KEY_LBRACKET,		-1, SHIP_TAB,		"Set Throttle to One-Third", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_RBRACKET,		-1, SHIP_TAB,		"Set Throttle to Two-Thirds", CC_TYPE_TRIGGER, -1, -1, 0 },
+	#ifdef PANDORA
+	{                           KEY_EQUAL,			-1, SHIP_TAB,		"Increase Throttle 5 Percent", CC_TYPE_TRIGGER, KEY_PERIOD, -1, 0 },
+	{                           KEY_MINUS,			-1, SHIP_TAB,		"Decrease Throttle 5 Percent", CC_TYPE_TRIGGER, KEY_COMMA, -1, 0 },
+	#else
 	{                           KEY_EQUAL,			-1, SHIP_TAB,		"Increase Throttle 5 Percent", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_MINUS,			-1, SHIP_TAB,		"Decrease Throttle 5 Percent", CC_TYPE_TRIGGER, -1, -1, 0 },
+	#endif
 
 	// squadmate messaging
 	{             KEY_SHIFTED | KEY_A,				-1, COMPUTER_TAB,	"Attack My Target", CC_TYPE_TRIGGER, -1, -1, 0 },
@@ -494,7 +519,11 @@ config_item Control_config[CCFG_MAX + 1] = {
 	{                           -1,					-1, -1,				"Show Objectives", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{ KEY_ALTED |               KEY_J,				-1, COMPUTER_TAB,	"Enter Subspace (End Mission)", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_J,				-1, TARGET_TAB,	"Target Target's Target", CC_TYPE_TRIGGER, -1, -1, 0 },
+	#ifdef PANDORA
+	{                           KEY_TAB,	     		5,  SHIP_TAB,		"Afterburner", CC_TYPE_CONTINUOUS, KEY_1, -1, 0 },
+	#else
 	{                           KEY_TAB,			5,  SHIP_TAB,		"Afterburner", CC_TYPE_CONTINUOUS, -1, -1, 0 },
+	#endif
 	
 	{                           KEY_INSERT,		-1, COMPUTER_TAB,	"Increase Weapon Energy", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_DELETE,		-1, COMPUTER_TAB,	"Decrease Weapon Energy", CC_TYPE_TRIGGER, -1, -1, 0 },
@@ -504,6 +533,15 @@ config_item Control_config[CCFG_MAX + 1] = {
 	{                           KEY_PAGEDOWN,		-1, COMPUTER_TAB,	"Decrease Engine Energy", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{ KEY_ALTED |               KEY_D,				-1, COMPUTER_TAB, "Equalize Energy Settings", CC_TYPE_TRIGGER, -1, -1, 0 },
 
+	#ifdef PANDORA
+	{             				KEY_Q,				7,  COMPUTER_TAB,	"Equalize Shield", CC_TYPE_TRIGGER, KEY_SHIFTED | KEY_Q, -1, 0 },
+	{             				KEY_UP,				-1, COMPUTER_TAB,	"Augment Forward Shield", CC_TYPE_TRIGGER, KEY_SHIFTED | KEY_UP, -1, 0 },
+	{            				KEY_DOWN,			-1, COMPUTER_TAB,	"Augment Rear Shield", CC_TYPE_TRIGGER, KEY_SHIFTED | KEY_DOWN, -1, 0 },
+	{             				KEY_LEFT,			-1, COMPUTER_TAB,	"Augment Left Shield", CC_TYPE_TRIGGER, KEY_SHIFTED | KEY_LEFT, -1, 0 },
+	{             				KEY_RIGHT,			-1, COMPUTER_TAB,	"Augment Right Shield", CC_TYPE_TRIGGER, KEY_SHIFTED | KEY_RIGHT, -1, 0 },
+	{                           KEY_SCROLLOCK,		-1, COMPUTER_TAB,	"Transfer Energy Laser->Shield", CC_TYPE_TRIGGER, KEY_8, -1, 0 },
+	{             KEY_SHIFTED | KEY_SCROLLOCK,		-1, COMPUTER_TAB,	"Transfer Energy Shield->Laser", CC_TYPE_TRIGGER, KEY_SHIFTED | KEY_8, -1, 0 },
+	#else
 	{                           KEY_Q,				7,  COMPUTER_TAB,	"Equalize Shield", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_UP,				-1, COMPUTER_TAB,	"Augment Forward Shield", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_DOWN,			-1, COMPUTER_TAB,	"Augment Rear Shield", CC_TYPE_TRIGGER, -1, -1, 0 },
@@ -511,6 +549,7 @@ config_item Control_config[CCFG_MAX + 1] = {
 	{                           KEY_RIGHT,			-1, COMPUTER_TAB,	"Augment Right Shield", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{                           KEY_SCROLLOCK,	-1, COMPUTER_TAB,	"Transfer Energy Laser->Shield", CC_TYPE_TRIGGER, -1, -1, 0 },
 	{             KEY_SHIFTED | KEY_SCROLLOCK,	-1, COMPUTER_TAB,	"Transfer Energy Shield->Laser", CC_TYPE_TRIGGER, -1, -1, 0 },
+	#endif
 	{                           -1,					-1, -1,				"Show Damage Popup Window", CC_TYPE_TRIGGER, -1, -1, 0 },	
 
 	{                           -1,					-1, SHIP_TAB,		"Bank When Pressed", CC_TYPE_CONTINUOUS, -1, -1, 0 },
@@ -530,10 +569,17 @@ config_item Control_config[CCFG_MAX + 1] = {
 	{             KEY_SHIFTED | KEY_B,				-1, TARGET_TAB,	"Target Previous Hostile Bomb or Bomber", CC_TYPE_TRIGGER, -1, -1, 0 },
 
 	// multiplayer messaging keys
+	#ifdef PANDORA
+	{ 									 KEY_1,				-1, COMPUTER_TAB,	"(Multiplayer) Message All", CC_TYPE_CONTINUOUS, KEY_ALTED | KEY_1, -1, 0 },
+	{									 KEY_2,				-1, COMPUTER_TAB, "(Multiplayer) Message Friendly", CC_TYPE_CONTINUOUS, KEY_ALTED | KEY_2, -1, 0 },
+	{ 									 KEY_3,				-1, COMPUTER_TAB, "(Multiplayer) Message Hostile", CC_TYPE_CONTINUOUS, KEY_ALTED | KEY_3, -1, 0 },
+	{ 									 KEY_4,				-1, COMPUTER_TAB, "(Multiplayer) Message Target", CC_TYPE_CONTINUOUS, KEY_ALTED	| KEY_4, -1, 0 },
+	#else
 	{									 KEY_1,				-1, COMPUTER_TAB,	"(Multiplayer) Message All", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{									 KEY_2,				-1, COMPUTER_TAB, "(Multiplayer) Message Friendly", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{									 KEY_3,				-1, COMPUTER_TAB, "(Multiplayer) Message Hostile", CC_TYPE_CONTINUOUS, -1, -1, 0 },
 	{									 KEY_4,				-1, COMPUTER_TAB, "(Multiplayer) Message Target", CC_TYPE_CONTINUOUS, -1, -1, 0 },
+	#endif
 	{ KEY_ALTED	|					 KEY_X,				-1, COMPUTER_TAB, "(Multiplayer) Observer zoom to target", CC_TYPE_TRIGGER, -1, -1, 0 },	
 
 	{             KEY_SHIFTED | KEY_PERIOD,		-1, COMPUTER_TAB,	"Increase time compression", CC_TYPE_TRIGGER, -1, -1, 0 },
@@ -579,16 +625,26 @@ const char *Scan_code_text_german[] = {
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
-	"",				"",				"",				"",				"Num Eingabe",			"Strg Rechts",			"",				"",
+#ifdef PANDORA
+	"",				"",				"",				"",				"Num Eingabe",			"[R]",			"",				"",
+#else
+	"",				"",				"",				"",				"Num Eingabe",			"[R]",			"",				"",
+#endif
 
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"Num /",			"",				"Druck",
 	"Alt",				"",				"",				"",				"",				"",				"",				"",
 
+#ifdef PANDORA
+	"",				"",				"",				"",				"",				"Num Lock",			"",				"[A]",
+	"Pfeil Hoch",	"[Y]",			"",				"Pfeil Links",	"",				"Pfeil Rechts",		"",				"[B]",
+	"Pfeil Runter", "[X]",			"Einfg",		"Entf",			"",				"",					"",				"",
+#else
 	"",				"",				"",				"",				"",				"Num Lock",			"",				"Pos 1",
 	"Pfeil Hoch",			"Bild Hoch",			"",				"Pfeil Links",			"",				"Pfeil Rechts",			"",				"Ende",
 	"Pfeil Runter", 			"Bild Runter",			"Einfg",			"Entf",				"",				"",				"",				"",
+#endif
 	"",				"",				"",				"",				"",				"",				"",				"",
 
 	"",				"",				"",				"",				"",				"",				"",				"",
@@ -630,16 +686,26 @@ const char *Scan_code_text_french[] = {
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
-	"",				"",				"",				"",				"Pav\x82 Entr",			"Ctrl Droite",		"",				"",
+#ifdef PANDORA
+	"",				"",				"",				"",				"Pav\x82 Entr",	"[R]",			"",				"",
+#else
+	"",				"",				"",				"",				"Pav\x82 Entr",	"Ctrl Droite",	"",				"",
+#endif
 
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"Pav\x82 /",			"",				"Impr \x82""cran",
 	"Alt",				"",				"",				"",				"",				"",				"",				"",
 
+#ifdef PANDORA
+	"",				"",				"",				"",				"",				"Verr num",			"",				"[A]",
+	"Fl\x82""che Haut",			"[Y]",			"",				"Fl\x82""che Gauche",			"",				"Fl\x82""che Droite",			"",			"[B]",
+	"Fl\x82""che Bas", 			"[X]",			"Inser",			"Suppr",			"",				"",				"",				"",
+#else
 	"",				"",				"",				"",				"",				"Verr num",			"",				"Orig.",
-	"Fl\x82""che Haut",			"Page Haut",			"",				"Fl\x82""che Gauche",			"",				"Fl\x82""che Droite",			"",			"Fin",
-	"Fl\x82""che Bas", 			"Page Bas",			"Inser",			"Suppr",			"",				"",				"",				"",
+	"Fl\x82""che Haut",			"Page Haut",		"",				"Fl\x82""che Gauche","",			"Fl\x82""che Droite",		"",			"Fin",
+	"Fl\x82""che Bas", 			"Page Bas",			"Inser",		"Suppr",		"",				"",				"",				"",
+#endif
 	"",				"",				"",				"",				"",				"",				"",				"",
 
 	"",				"",				"",				"",				"",				"",				"",				"",
@@ -682,16 +748,26 @@ const char *Scan_code_text_english[] = {
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
+#ifdef PANDORA
+	"",				"",				"",				"",				"Pad Enter",	"[R]",			"",				"",
+#else
 	"",				"",				"",				"",				"Pad Enter",	"Right Ctrl",	"",				"",
+#endif
 
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
-	"",				"",				"",				"",				"",				"Pad /",			"",				"Print Scrn",
+	"",				"",				"",				"",				"",				"Pad /",		"",				"Print Scrn",
 	"Alt",			"",				"",				"",				"",				"",				"",				"",
 
+#ifdef PANDORA
+	"",				"",				"",				"",				"",				"Num Lock",		"",				"[A]",
+	"Up Arrow",		"[Y]",			"",				"Left Arrow",	"",				"Right Arrow",	"",				"[B]",
+	"Down Arrow",  	"[X]",			"Insert",		"Delete",		"",				"",				"",				"",
+#else
 	"",				"",				"",				"",				"",				"Num Lock",		"",				"Home",
 	"Up Arrow",		"Page Up",		"",				"Left Arrow",	"",				"Right Arrow",	"",				"End",
-	"Down Arrow",  "Page Down",	"Insert",		"Delete",		"",				"",				"",				"",
+	"Down Arrow",  "Page Down",		"Insert",		"Delete",		"",				"",				"",				"",
+#endif
 	"",				"",				"",				"",				"",				"",				"",				"",
 
 	"",				"",				"",				"",				"",				"",				"",				"",
@@ -733,16 +809,26 @@ const char *Scan_code_text_polish[] = {
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
+#ifdef PANDORA
+	"",				"",				"",				"",				"Num Enter",	"[R]",			"",				"",
+#else
 	"",				"",				"",				"",				"Num Enter",	"Prawy Ctrl",	"",				"",
+#endif
 
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"",				"",				"",
 	"",				"",				"",				"",				"",				"Num /",			"",				"PrntScr",
 	"Alt",			"",				"",				"",				"",				"",				"",				"",
 
+#ifdef PANDORA
+	"",				"",				"",				"",				"",				"Num Lock",		"",				"[A]",
+	"Kursor G\xF3ra",		"[Y]",	"",				"Kursor Lewo",	"",				"Kursor Prawo",	"",				"[B]",
+	"Kursor D\xF3\xB3",  "[B]",		"Insert",		"Delete",		"",				"",				"",				"",
+#else
 	"",				"",				"",				"",				"",				"Num Lock",		"",				"Home",
-	"Kursor G\xF3ra",		"Page Up",		"",				"Kursor Lewo",	"",				"Kursor Prawo",	"",				"End",
-	"Kursor D\xF3\xB3",  "Page Down",	"Insert",		"Delete",		"",				"",				"",				"",
+	"Kursor G\xF3ra",	"Page Up",	"",				"Kursor Lewo",	"",				"Kursor Prawo",	"",				"End",
+	"Kursor D\xF3\xB3",  "Page Down","Insert",		"Delete",		"",				"",				"",				"",
+#endif
 	"",				"",				"",				"",				"",				"",				"",				"",
 
 	"",				"",				"",				"",				"",				"",				"",				"",
@@ -932,10 +1018,12 @@ void control_config_common_init()
 		Joy_button_text = Joy_button_text_german;
 		
 		// swap init bindings for y and z keys
+		/*
 		Control_config[TARGET_SHIP_IN_RETICLE].key_default = KEY_Z;
 		Control_config[TARGET_LAST_TRANMISSION_SENDER].key_default = KEY_ALTED | KEY_Z;
 		Control_config[REVERSE_THRUST].key_default = KEY_Y;
 		Control_config[DISARM_MESSAGE].key_default = KEY_SHIFTED | KEY_Y;		
+		*/
 	} else if(Lcl_fr){
 		Scan_code_text = Scan_code_text_french;
 		Joy_button_text = Joy_button_text_french;

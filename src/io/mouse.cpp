@@ -180,8 +180,8 @@ int Mouse_dx = 0;
 int Mouse_dy = 0;
 int Mouse_dz = 0;
 
-int Mouse_sensitivity = 4;
-int Use_mouse_to_fly = 0;
+int Mouse_sensitivity = 9;/*SEB 4*/
+int Use_mouse_to_fly = 1;/*SEB 0*/
 int Mouse_hidden = 0;
 int Keep_mouse_centered = 0;;
 

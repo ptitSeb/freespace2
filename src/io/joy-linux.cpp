@@ -370,8 +370,11 @@ void joy_read()
         perror( "joy_read" );
 }
 
-
+#ifdef PANDORA
+static char _joy_device[] = "/dev/input/js0";
+#else
 static char _joy_device[] = "/dev/js0";
+#endif
 
 static bool openJoyDevice( int n )
 {

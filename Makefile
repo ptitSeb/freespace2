@@ -5,7 +5,15 @@ MACOSX=false
 FS1=false
 DEMO=false
 
-DEBUG=true
+DEBUG=false
+
+ODROID?=false
+PANDORA=true
+HAVE_GLES=true
+
+ifeq ($(strip $(ODROID)),true)
+	PANDORA=false
+endif
 
 CC=g++
 AR=ar
@@ -16,18 +24,41 @@ FS_DEMO_BINARY=freespace2_demo
 LDFLAGS=$(shell sdl-config --libs) -lopenal
 CFLAGS=-Wall -g -DPLAT_UNIX $(shell sdl-config --cflags) -Iinclude/ # -fwritable-strings
 CFLAGS+=-fsigned-char -Wno-format-y2k
+ifeq ($(strip $(PANDORA)),true)
+	CFLAGS+=-ffast-math -pipe -mcpu=cortex-a8 -mfpu=neon -ftree-vectorize -mfloat-abi=softfp -fsingle-precision-constant -mno-unaligned-access -fpermissive
+endif
+ifeq ($(strip $(ODROID)),true)
+        CFLAGS+=-ffast-math -pipe -mcpu=cortex-a9 -mfpu=neon -ftree-vectorize -mfloat-abi=hard -fsingle-precision-constant -mno-unaligned-access -fpermissive
+endif
 
 ifeq ($(strip $(DEBUG)),false)
-	CFLAGS+=-02
-	CFLAGS+=-DNDEBUG
+	CFLAGS+=-DNDEBUG -O3
 	CFLAGS+=-funroll-loops # -fomit-frame-pointer # not stable?
 	#CFLAGS+=-march=pentiumpro -mcpu=pentiumpro # not stable?
+endif
+
+ifeq ($(strip $(PANDORA)),true)
+	CFLAGS+=-DPANDORA
+	HAVE_GLES=true
+endif
+ifeq ($(strip $(ODROID)),true)
+        CFLAGS+=-DODROID
+        HAVE_GLES=true
 endif
 
 ifeq ($(strip $(MACOSX)),true)
   CFLAGS+=-DMACOSX=1 -I/System/Library/Frameworks/OpenGL.framework/Headers -I/System/Library/Frameworks/OpenAL.framework/Headers
 else
-  LDFLAGS+= -lGL
+	ifeq ($(strip $(HAVE_GLES)),true)
+		CFLAGS+=-DHAVE_GLES
+		ifeq ($(strip $(ODROID)),true)
+			LDFLAGS+= -lGLESv1 -lEGL -lX11
+		else
+			LDFLAGS+= -lGLES_CM -lEGL -lX11
+		endif
+	else
+		LDFLAGS+= -lGL
+	endif
 endif
 
 ifeq ($(strip $(FS1)), true)
@@ -299,6 +330,11 @@ FONTTOOL_SOURCES=./src/fonttool/fontstubs.cpp \
 	./src/fonttool/fontcreate.cpp \
 	./src/fonttool/fontkern.cpp \
 	./src/fonttool/fontkerncopy.cpp
+	
+ifeq ($(strip $(HAVE_GLES)),true)
+	CODE_SOURCES +=./src/graphics/eglport.cpp
+endif
+
 
 CODE_OBJECTS=$(CODE_SOURCES:.cpp=.o)
 FS_OBJECTS=$(FS_SOURCES:.cpp=.o)

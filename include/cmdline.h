@@ -191,6 +191,9 @@ extern int Cmdline_timeout;
 extern int Cmdline_no_grab;
 extern int Cmdline_play_movies;
 extern int Cmdline_fullscreen;
+#ifdef PANDORA
+extern int Cmdline_noshouldermb;
+#endif
 #endif
 
 extern int Cmdline_window;

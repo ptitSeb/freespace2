@@ -510,7 +510,12 @@ static void mve_convert_and_draw()
 
 	for (y=0; y<g_height; y++) {
 		for (x = 0; x < g_width; x++) {
+			#ifdef HAVE_GLES
+			pDests[x] = (1)|(*pSrcs&0x7fff)<<1;
+//			pDests[x] = (1)|((*pSrcs)&0x1f)<<11|((*pSrcs)&0x3e0)<<1|((*pSrcs)&0x7c00)>>9;
+			#else
 			pDests[x] = (1<<15)|*pSrcs;
+			#endif
 
 			pSrcs++;
 		}
@@ -548,8 +553,66 @@ void mve_video_display()
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	
+	#ifdef HAVE_GLES
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, pixelbuf);
+	#else
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, pixelbuf);
+	#endif
 
+	#ifdef HAVE_GLES
+			GLfloat vtx1[] = {
+			 x,y,
+			 x,y+256,
+			 x+256,y+256,
+			 x+256,y,
+			};
+			GLfloat tex1[] = {
+			 0,0,
+			 0,i2fl(256)/i2fl(hp2),
+			 i2fl(256)/i2fl(wp2),i2fl(256)/i2fl(hp2),
+			 i2fl(256)/i2fl(wp2),0
+			};
+		 
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		 
+			glVertexPointer(2, GL_FLOAT, 0, vtx1);
+			glTexCoordPointer(2, GL_FLOAT, 0, tex1);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);	// 0,0
+			
+			vtx1[0]=vtx1[2]=x; vtx1[1]=vtx1[7]=y+256; vtx1[3]=vtx1[5]=y+h; vtx1[4]=vtx1[6]=x+256;
+			tex1[0]=tex1[2]=0; tex1[1]=tex1[7]=i2fl(256)/i2fl(hp2); tex1[3]=tex1[5]=i2fl(h)/i2fl(hp2); tex1[4]=tex1[6]=i2fl(256)/i2fl(wp2);
+			glVertexPointer(2, GL_FLOAT, 0, vtx1);
+			glTexCoordPointer(2, GL_FLOAT, 0, tex1);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);	// 0, 256
+
+			vtx1[0]+=256; vtx1[1]=y; vtx1[2]+=256.0f; vtx1[3]=y+256; vtx1[4]+=256; vtx1[5]=y+256; vtx1[6]+=256.0f; vtx1[7]=y;
+			tex1[0]=tex1[2]=i2fl(256)/i2fl(wp2); tex1[1]=tex1[7]=0;  tex1[3]=tex1[5]=i2fl(256)/i2fl(hp2); tex1[4]=tex1[6]=i2fl(512)/i2fl(wp2);
+			glVertexPointer(2, GL_FLOAT, 0, vtx1);
+			glTexCoordPointer(2, GL_FLOAT, 0, tex1);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);	// 256, 0
+			
+			vtx1[1]+=256; vtx1[3]=vtx1[5]=y+h; vtx1[7]+=256;
+			tex1[1]=tex1[7]=i2fl(256)/i2fl(hp2); tex1[3]=tex1[5]=i2fl(h)/i2fl(hp2);
+			glVertexPointer(2, GL_FLOAT, 0, vtx1);
+			glTexCoordPointer(2, GL_FLOAT, 0, tex1);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);	// 256, 256
+			
+			vtx1[0]=vtx1[2]=x+512; vtx1[1]=vtx1[7]=y; vtx1[3]=vtx1[5]=y+256; vtx1[4]=vtx1[6]=x+w;
+			tex1[0]=tex1[2]=i2fl(512)/i2fl(wp2); tex1[1]=tex1[7]=0; tex1[3]=tex1[5]=i2fl(256)/i2fl(hp2); tex1[4]=tex1[6]=i2fl(w)/i2fl(wp2);
+			glVertexPointer(2, GL_FLOAT, 0, vtx1);
+			glTexCoordPointer(2, GL_FLOAT, 0, tex1);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);	// 512, 0
+
+			vtx1[0]=vtx1[2]=x+512; vtx1[1]=vtx1[7]=y+256; vtx1[3]=vtx1[5]=y+h; vtx1[4]=vtx1[6]=x+w;
+			tex1[0]=tex1[2]=i2fl(512)/i2fl(wp2); tex1[1]=tex1[7]=i2fl(256)/i2fl(hp2); tex1[3]=tex1[5]=i2fl(h)/i2fl(hp2); tex1[4]=tex1[6]=i2fl(w)/i2fl(wp2);
+			glVertexPointer(2, GL_FLOAT, 0, vtx1);
+			glTexCoordPointer(2, GL_FLOAT, 0, tex1);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);	// 512, 256
+
+			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	#else
 	// 0, 0
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,0);										glVertex2i(x,y);
@@ -597,6 +660,7 @@ void mve_video_display()
 		glTexCoord2f(i2fl(w)/i2fl(wp2),i2fl(h)/i2fl(hp2));		glVertex2i(x+w,y+h);
 		glTexCoord2f(i2fl(w)/i2fl(wp2),i2fl(256)/i2fl(hp2));	glVertex2i(x+w,y+256);
 	glEnd();
+	#endif
 #else
 	// centers on 1024x768, fills on 640x480
 	x = ((gr_screen.max_w - g_screenWidth) / 2);
@@ -719,7 +783,11 @@ int mve_video_init(ubyte *data)
 	}
 
 	// NOTE: using NULL instead of pixelbuf crashes some drivers, but then so does pixelbuf so less of two evils...
+	#ifdef HAVE_GLES
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, wp2, hp2, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, NULL);
+	#else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1, wp2, hp2, 0, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, NULL);
+	#endif
 #endif
 
 	memset(g_palette, 0, 768);

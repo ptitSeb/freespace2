@@ -46,7 +46,12 @@
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #else
+#ifdef HAVE_GLES
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+#else
 #include <GL/gl.h>
+#endif
 #endif
 
 void gr_opengl_init();

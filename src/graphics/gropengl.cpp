@@ -389,6 +389,15 @@
 #include "cmdline.h"
 #include "cfile.h"
 
+#ifdef HAVE_GLES
+// some helper functions
+#define glColor3ub(r, g, b) glColor4ub(r, g, b, 255)
+#define glFogi glFogf
+#define glOrtho	glOrthof
+#define glDepthRange glDepthRangef
+#include "eglport.h"
+#endif
+
 static int Inited = 0;
 
 typedef enum gr_texture_source {
@@ -418,7 +427,9 @@ volatile int GL_activate = 0;
 volatile int GL_deactivate = 0;
 
 static int GL_use_luminance_alpha;
+#ifndef HAVE_GLES
 static int FSAA;
+#endif
 static ubyte GL_xlat[256] = { 0 };
 
 static char *Gr_saved_screen = NULL;
@@ -612,7 +623,8 @@ void gr_opengl_flip()
 	 		gr_set_bitmap(Gr_cursor, GR_ALPHABLEND_NONE, GR_BITBLT_MODE_NORMAL, 1.0f, -1, -1);
 			gr_bitmap( mx, my );
 	 	}
-	 }
+	}
+	 
 	 
 #ifndef NDEBUG
 	GLenum error = glGetError();
@@ -627,7 +639,11 @@ void gr_opengl_flip()
 	} while (error != GL_NO_ERROR);
 #endif
 	
+	#ifdef HAVE_GLES
+	EGL_SwapBuffers();
+	#else
 	SDL_GL_SwapBuffers ();
+	#endif
 
 	opengl_tcache_frame ();
 	
@@ -643,6 +659,11 @@ void gr_opengl_flip()
 		GL_deactivate-=cnt;
 		// gr_opengl_clip_cursor(0);  /* mouse grab, see opengl_activate */
 	}
+	// restaure mouse if saved ???
+/*	if (Gr_opengl_mouse_saved) {		
+ 		gr_set_bitmap(Gr_opengl_mouse_saved_data, GR_ALPHABLEND_NONE, GR_BITBLT_MODE_NORMAL, 1.0f, -1, -1);
+		gr_bitmap( Gr_opengl_mouse_saved_x1, Gr_opengl_mouse_saved_y1 );
+	}*/
 }
 
 void gr_opengl_flip_window(uint _hdc, int x, int y, int w, int h )
@@ -683,7 +704,11 @@ void gr_opengl_set_clip(int x,int y,int w,int h)
 	gr_screen.clip_height = h;
 	
 	glEnable(GL_SCISSOR_TEST);
+#ifdef PANDORA
+	glScissor(x+80, gr_screen.max_h-y-h, w, h);
+#else
 	glScissor(x, gr_screen.max_h-y-h, w, h);
+#endif
 }
 
 void gr_opengl_reset_clip()
@@ -696,7 +721,6 @@ void gr_opengl_reset_clip()
 	gr_screen.clip_bottom = gr_screen.max_h - 1;
 	gr_screen.clip_width = gr_screen.max_w;
 	gr_screen.clip_height = gr_screen.max_h;
-	
 	glDisable(GL_SCISSOR_TEST);
 //	glScissor(0, 0, gr_screen.max_w, gr_screen.max_h);
 }
@@ -880,6 +904,30 @@ static void gr_opengl_aabitmap_ex_internal(int x,int y,int w,int h,int sx,int sy
 		glColor3ub(gr_screen.current_color.red, gr_screen.current_color.green, gr_screen.current_color.blue);
 	}
 
+	#ifdef HAVE_GLES
+	GLfloat vtx1[] = {
+	 x1, y2, -0.99,
+	 x2, y2, -0.99,
+	 x2, y1, -0.99,
+	 x1, y1, -0.99
+	};
+	GLfloat tex1[] = {
+	 u0, v1,
+	 u1, v1,
+	 u1, v0,
+	 u0, v0
+	};
+ 
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+ 
+	glVertexPointer(3, GL_FLOAT, 0, vtx1);
+	glTexCoordPointer(2, GL_FLOAT, 0, tex1);
+	glDrawArrays(GL_TRIANGLE_FAN,0,4);
+ 
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	#else
 	glBegin (GL_QUADS);
 	  glTexCoord2f (u0, v1);
 	  glVertex3f (x1, y2, -0.99);
@@ -893,6 +941,7 @@ static void gr_opengl_aabitmap_ex_internal(int x,int y,int w,int h,int sx,int sy
 	  glTexCoord2f (u0, v0);
 	  glVertex3f (x1, y1, -0.99);
 	glEnd ();
+	#endif
 }
 
 void gr_opengl_aabitmap_ex(int x,int y,int w,int h,int sx,int sy)
@@ -1089,10 +1138,19 @@ void gr_opengl_line(int x1,int y1,int x2,int y2)
 	sy2 = i2fl(y2 + gr_screen.offset_y)+0.5;
 	
 	if ( x1 == x2 && y1 == y2 ) {
+		#ifdef HAVE_GLES
+		glColor4ub (gr_screen.current_color.red, gr_screen.current_color.green, gr_screen.current_color.blue, gr_screen.current_color.alpha);
+		GLfloat vtx1[] = {sx1, sy1, -0.99f};
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(3, GL_FLOAT, 0, vtx1);
+		glDrawArrays(GL_POINTS,0,1);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		#else
 		glBegin (GL_POINTS);
 		  glColor4ub (gr_screen.current_color.red, gr_screen.current_color.green, gr_screen.current_color.blue, gr_screen.current_color.alpha);
 		  glVertex3f (sx1, sy1, -0.99f);
 		glEnd ();
+		#endif
 		
 		return;
 	}
@@ -1111,11 +1169,20 @@ void gr_opengl_line(int x1,int y1,int x2,int y2)
 		}
 	}
 	
+	#ifdef HAVE_GLES
+	glColor4ub (gr_screen.current_color.red, gr_screen.current_color.green, gr_screen.current_color.blue, gr_screen.current_color.alpha);
+	GLfloat vtx1[] = {sx2, sy2, -0.99f, sx1, sy1, -0.99f};
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, vtx1);
+	glDrawArrays(GL_LINES,0,2);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	#else
 	glBegin (GL_LINES);
 	  glColor4ub (gr_screen.current_color.red, gr_screen.current_color.green, gr_screen.current_color.blue, gr_screen.current_color.alpha);
 	  glVertex3f (sx2, sy2, -0.99f);
 	  glVertex3f (sx1, sy1, -0.99f);
 	glEnd ();
+	#endif
 }
 
 void gr_opengl_aaline(vertex *v1, vertex *v2)
@@ -1161,12 +1228,26 @@ void gr_opengl_gradient(int x1,int y1,int x2,int y2)
 		}
 	}
 	
+	#ifdef HAVE_GLES
+	GLfloat vtx1[] = {sx2, sy2, -0.99f, sx1, sy1, -0.99f};
+	GLfloat col1[] = {
+		gr_screen.current_color.red/255.0f, gr_screen.current_color.green/255.0f, gr_screen.current_color.blue/255.0f, ba/255.0f,
+		gr_screen.current_color.red/255.0f, gr_screen.current_color.green/255.0f, gr_screen.current_color.blue/255.0f, aa/255.0f };
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, vtx1);
+	glColorPointer(4, GL_FLOAT, 0, col1);
+	glDrawArrays(GL_LINES,0,2);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	#else
 	glBegin (GL_LINES);
 	  glColor4ub (gr_screen.current_color.red, gr_screen.current_color.green, gr_screen.current_color.blue, ba);
 	  glVertex3f (sx2, sy2, -0.99f);
 	  glColor4ub (gr_screen.current_color.red, gr_screen.current_color.green, gr_screen.current_color.blue, aa);
 	  glVertex3f (sx1, sy1, -0.99f);
 	glEnd ();	
+	#endif
 }
 
 void gr_opengl_circle( int xc, int yc, int d )
@@ -1367,7 +1448,28 @@ static void gr_opengl_tmapper_internal( int nv, vertex ** verts, uint flags, int
 		gr_fog_set(GR_FOGMODE_FOG, ra, ga, ba, -1.0f, -1.0f);
 	}
 	
+	#ifdef HAVE_GLES
+/*	GLfloat *vtx = new GLfloat[3*nv];
+	GLfloat *col = new GLfloat[4*nv];
+	GLFloat *tex;
+	if ( flags & TMAP_FLAG_TEXTURED ) tex = new GLfloat[2*nv];*/
+	static GLfloat *vtx=NULL;
+	static GLfloat *col=NULL;
+	static GLfloat *tex=NULL;
+	static int taille=0;
+	if (nv>taille) {
+		delete[] vtx;
+		delete[] col;
+		delete[] tex;
+		taille=nv;
+		vtx=new GLfloat[4*nv];
+		col=new GLfloat[4*nv];
+		tex=new GLfloat[2*nv];
+	}
+	int glidx = 0;
+	#else
 	glBegin(GL_TRIANGLE_FAN);
+	#endif
 	for (i = nv-1; i >= 0; i--) {		
 		vertex * va = verts[i];
 		float sx, sy, sz;
@@ -1414,7 +1516,12 @@ static void gr_opengl_tmapper_internal( int nv, vertex ** verts, uint flags, int
 		} else {
 			// use constant RGB values...
 		}
+		#ifdef HAVE_GLES
+		col[glidx*4+0] = r/255.0f; col[glidx*4+1] = g/255.0f;
+		col[glidx*4+2] = b/255.0f; col[glidx*4+3] = a/255.0f;
+		#else
 		glColor4ub (r,g,b,a);
+		#endif
 
 		if((gr_screen.current_fog_mode != GR_FOGMODE_NONE) && (D3D_fog_mode == 1)){
 			int sr, sg, sb, sa;
@@ -1439,12 +1546,41 @@ static void gr_opengl_tmapper_internal( int nv, vertex ** verts, uint flags, int
 		if ( flags & TMAP_FLAG_TEXTURED )       {
 			tu = va->u*u_scale;
 			tv = va->v*v_scale;
+			#ifdef HAVE_GLES
+			tex[glidx*2+0] = tu; tex[glidx*2+1] = tv;
+			#else
 			glTexCoord2f(tu, tv);
+			#endif
 		}
-		
+		#ifdef HAVE_GLES
+		vtx[glidx*4+0] = sx/rhw; vtx[glidx*4+1] = sy/rhw;
+		vtx[glidx*4+2] = -sz/rhw; vtx[glidx*4+3] = 1.0/rhw;
+		glidx++;
+		#else
 		glVertex4f(sx/rhw, sy/rhw, -sz/rhw, 1.0/rhw);
+		#endif
 	}
+	#ifdef HAVE_GLES
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	if ( flags & TMAP_FLAG_TEXTURED ) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+ 
+	glVertexPointer(4, GL_FLOAT, 0, vtx);
+	glColorPointer(4, GL_FLOAT, 0, col);
+	if ( flags & TMAP_FLAG_TEXTURED ) glTexCoordPointer(2, GL_FLOAT, 0, tex);
+	glDrawArrays(GL_TRIANGLE_FAN,0,glidx);
+ 
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	if ( flags & TMAP_FLAG_TEXTURED ) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+/*	GLfloat *vtx = new GLfloat[3*nv];
+	GLfloat *col = new GLfloat[4*nv];
+	GLFloat *tex;
+	if ( flags & TMAP_FLAG_TEXTURED ) tex = new GLfloat[2*nv];*/	
+	#else
 	glEnd();
+	#endif
 }
 
 void gr_opengl_tmapper( int nverts, vertex **verts, uint flags )
@@ -1617,7 +1753,7 @@ void gr_opengl_set_color_fast(color *dst)
 
 void gr_opengl_print_screen(const char *filename)
 {
-#ifdef GL_VERSION_1_2
+#if defined(GL_VERSION_1_2) || defined(HAVE_GLES)
 	char tmp[MAX_FILENAME_LEN];
 	ubyte *buf = NULL;
 
@@ -1650,7 +1786,21 @@ void gr_opengl_print_screen(const char *filename)
 
 	memset(buf, 0, gr_screen.max_w * gr_screen.max_h * 3);
 
+	#ifdef HAVE_GLES
+	int p2width = 1;
+	int p2height = 1;
+	while (p2width<gr_screen.max_w) p2width*=2;
+	while (p2height<gr_screen.max_h) p2height*=2;
+	ubyte *ptmp=(ubyte*)malloc(p2width * p2height * 4);
+	glReadPixels(0, 0, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, ptmp);
+	for (int y=0; y<gr_screen.max_h; y++)
+		for (int x=0; x<gr_screen.max_w; x++)
+			for (int aa=0; aa<3; aa++)
+				buf[(y*gr_screen.max_w+x)*3+(3-aa)]=ptmp[(y*p2width+x)*4+aa];
+	free(ptmp);
+	#else
 	glReadPixels(0, 0, gr_screen.max_w, gr_screen.max_h, GL_BGR, GL_UNSIGNED_BYTE, buf);
+	#endif
 
 	cfwrite(buf, gr_screen.max_w * gr_screen.max_h * 3, 1, f);
 
@@ -1873,8 +2023,13 @@ static void opengl_tcache_init (int use_sections)
 	GL_min_texture_width = 16;
 	GL_min_texture_height = 16;
 
+	#ifdef HAVE_GLES
+	GL_max_texture_width = 1024;
+	GL_max_texture_height = 1024;
+	#else
 	GL_max_texture_width = opengl_max_tex_size_get();
 	GL_max_texture_height = opengl_max_tex_size_get();
+	#endif
 
 	Textures = (tcache_slot_opengl *)malloc(MAX_BITMAPS*sizeof(tcache_slot_opengl));
 	if ( !Textures )        {
@@ -2146,6 +2301,9 @@ static int opengl_create_texture_sub(int bitmap_type, int texture_handle, ushort
 	int size;
 	int i, j;
 	ubyte *bmp_data = ((ubyte*)data);
+	#ifdef HAVE_GLES
+	unsigned short *wtexmemp = NULL, wtexmem;
+	#endif
 	ubyte *texmem = NULL, *texmemp;
 	
 	// bogus
@@ -2236,7 +2394,13 @@ static int opengl_create_texture_sub(int bitmap_type, int texture_handle, ushort
 		case TCACHE_TYPE_BITMAP_SECTION:
 			{
 				// if we aren't resizing in any way then we can just use bmp_data directly
+				#ifdef HAVE_GLES
+				resize=1;
+				#endif
+//				wtexmemp = (unsigned short *)texmem;
+//				#else
 				if ( resize ) {
+//				#endif
 					texmem = (ubyte *) malloc (tex_w*tex_h*2);
 					texmemp = texmem;
 				
@@ -2245,20 +2409,42 @@ static int opengl_create_texture_sub(int bitmap_type, int texture_handle, ushort
 							if (i < src_h && j < src_w) {
 								*texmemp++ = bmp_data[((i+sy)*bmap_w+(j+sx))*2+0];
 								*texmemp++ = bmp_data[((i+sy)*bmap_w+(j+sx))*2+1];
+								#ifdef HAVE_GLES
+								// invert 1555/BGRA to 5551/RGBA (0x1f / 0x3e0 / 7c00)
+								wtexmemp=(unsigned short*)texmemp-1;
+								wtexmem=*(wtexmemp);
+								*wtexmemp = ((wtexmem&0x8000)>>15) | ((wtexmem&0x7fff)<<1);
+//								*wtexmemp = ((wtexmem&0x8000)>>15) | ((wtexmem&0x7c00)>>9) | ((wtexmem&0x03e0)<<1) | ((wtexmem&0x001f)<<11);
+								#endif
 							} else {
 								*texmemp++ = 0;
 								*texmemp++ = 0;
+								#ifdef HAVE_GLES
+//								wtexmemp++;
+								#endif
 							}
 						}
 					}
+//				#ifndef HAVE_GLES
 				}
+//				#endif
 				
 				size = tex_w*tex_h*2;
 				
 				if (!reload) {
+					#ifdef HAVE_GLES
+//					glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, texmem);
+					glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, (resize) ? texmem : bmp_data);
+					#else
 					glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB5_A1, tex_w, tex_h, 0, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, (resize) ? texmem : bmp_data);
+					#endif
 				} else {
+					#ifdef HAVE_GLES
+					glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, (resize) ? texmem : bmp_data);
+//					glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, texmem);
+					#else
 					glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, (resize) ? texmem : bmp_data);
+					#endif
 				}
 
 				if (texmem != NULL)
@@ -2270,7 +2456,13 @@ static int opengl_create_texture_sub(int bitmap_type, int texture_handle, ushort
 		default:
 			{
 				// if we aren't resizing then we can just use bmp_data directly
+				#ifdef HAVE_GLES
+				resize=1;
+				#endif
+//				wtexmemp = (unsigned short *)texmem;
+//				#else
 				if ( resize ) {
+//				#endif
 					texmem = (ubyte *) malloc (tex_w*tex_h*2);
 					texmemp = texmem;
 
@@ -2289,17 +2481,36 @@ static int opengl_create_texture_sub(int bitmap_type, int texture_handle, ushort
 							*texmemp++ = bmp_data[(f2i(v)*bmap_w+f2i(utmp))*2+0];
 							*texmemp++ = bmp_data[(f2i(v)*bmap_w+f2i(utmp))*2+1];
 							utmp += du;
+							#ifdef HAVE_GLES
+							// invert 5551/BGRA to 1555/ARGB (0x1f / 0x3e0 / 7c00)
+							wtexmemp=(unsigned short*)texmemp-1;
+							wtexmem=*(wtexmemp);
+							*wtexmemp = ((wtexmem&0x8000)>>15) | ((wtexmem&0x7fff)<<1);
+//							*wtexmemp = ((wtexmem&0x8000)>>15) | ((wtexmem&0x7c00)>>9) | ((wtexmem&0x03e0)<<1) | ((wtexmem&0x001f)<<11);
+							#endif
 						}
 						v += dv;
 					}
+//				#ifndef HAVE_GLES
 				}
+//				#endif
 
 				size = tex_w*tex_h*2;
 				
 				if (!reload) {
+					#ifdef HAVE_GLES
+//					glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, texmem);
+					glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, (resize) ? texmem : bmp_data);
+					#else
 					glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB5_A1, tex_w, tex_h, 0, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, (resize) ? texmem : bmp_data);
+					#endif
 				} else {
+					#ifdef HAVE_GLES
+//					glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, texmem);
+					glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, (resize) ? texmem : bmp_data);
+					#else
 					glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, (resize) ? texmem : bmp_data);
+					#endif
 				}
 
 				if (texmem != NULL)
@@ -2635,6 +2846,18 @@ void gr_opengl_flash(int r, int g, int b)
 		y2 = i2fl(gr_screen.clip_bottom+gr_screen.offset_y);
 		
 		glColor4ub(r, g, b, 255);
+		#ifdef HAVE_GLES
+		GLfloat vtx1[] = {
+		 x1, y2, -0.99,
+		 x2, y2, -0.99,
+		 x2, y1, -0.99,
+		 x1, y1, -0.99
+		};
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(3, GL_FLOAT, 0, vtx1);
+		glDrawArrays(GL_TRIANGLE_FAN,0,4);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		#else
 		glBegin (GL_QUADS);
 		  glVertex3f (x1, y2, -0.99);
 
@@ -2644,6 +2867,7 @@ void gr_opengl_flash(int r, int g, int b)
 
 		  glVertex3f (x1, y1, -0.99);
 		glEnd ();	  
+		#endif
 	}
 }
 
@@ -2729,23 +2953,56 @@ void gr_opengl_fade_out(int instantaneous)
 
 void gr_opengl_get_region(int front, int w, int h, ubyte *data)
 {
+	#ifndef HAVE_GLES
 	if (front) {
 		glReadBuffer(GL_FRONT);
 	} else {
 		glReadBuffer(GL_BACK);
 	}
+	#endif
 	
 	gr_opengl_set_state(TEXTURE_SOURCE_NO_FILTERING, ALPHA_BLEND_NONE, ZBUFFER_TYPE_NONE);
-	
+	#ifndef HAVE_GLES
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, gr_screen.max_w);
+	#endif
 	
+	#ifdef HAVE_GLES
+		// on GLES, just grab everything, in RGBA format, and then copy the required datas
+	int p2width = 1;
+	int p2height = 1;
+	while (p2width<w) p2width*=2;
+	while (p2height<h) p2height*=2;
+	ubyte *ptmp=(ubyte*)malloc(p2width * p2height * 4);
+	glReadPixels(0, 0, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, ptmp);
+	ubyte r,g,b,a;
+	for (int y=gr_screen.max_h-h; y<h; y++)
+		for (int x=0; x<w; x++) {
+			r=ptmp[(y*p2width+x)*4+0];
+			g=ptmp[(y*p2width+x)*4+1];
+			b=ptmp[(y*p2width+x)*4+2];
+			a=ptmp[(y*p2width+x)*4+3];
+			if (gr_screen.bits_per_pixel == 15) {
+				data[(y*w+x)*2+0] = (r>>3)<<3 | (g>>3)>>2;
+				data[(y*w+x)*2+1] = ((g>>3)&3)<<6 | (b>>3)<<1 | (a)?1:0;
+			} else if (gr_screen.bits_per_pixel == 32) {
+				data[(y*w+x)*4+0] = r;
+				data[(y*w+x)*4+0] = g;
+				data[(y*w+x)*4+0] = b;
+				data[(y*w+x)*4+0] = a;
+			}
+		}
+	free(ptmp);
+	#else
 	if (gr_screen.bits_per_pixel == 15) {
 		glReadPixels(0, gr_screen.max_h-h-1, w, h, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, data);
 	} else if (gr_screen.bits_per_pixel == 32) {
 		glReadPixels(0, gr_screen.max_h-h-1, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
+	#endif
 	
+	#ifndef HAVE_GLES
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	#endif
 }
 
 void gr_opengl_save_mouse_area(int x, int y, int w, int h)
@@ -2770,8 +3027,29 @@ void gr_opengl_save_mouse_area(int x, int y, int w, int h)
 
 	gr_opengl_set_state(TEXTURE_SOURCE_NO_FILTERING, ALPHA_BLEND_NONE, ZBUFFER_TYPE_NONE);
 	
+	#ifdef HAVE_GLES
+	int p2width = 1;
+	int p2height = 1;
+	while (p2width<w) p2width*=2;
+	while (p2height<h) p2height*=2;
+	ubyte *ptmp=(ubyte*)malloc(p2width * p2height * 4);
+	glReadPixels(x, gr_screen.max_h-y-1-h, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, ptmp);
+	ubyte r,g,b,a;
+	for (int yy=0; yy<h; yy++)
+		for (int xx=0; xx<w; xx++) {
+			r=ptmp[(yy*p2width+xx)*4+0];
+			g=ptmp[(yy*p2width+xx)*4+1];
+			b=ptmp[(yy*p2width+xx)*4+2];
+			a=ptmp[(yy*p2width+xx)*4+3];
+			Gr_opengl_mouse_saved_data[(yy*w+xx)*2+0] = (r>>3)<<3 | (g>>3)>>2;
+			Gr_opengl_mouse_saved_data[(yy*w+xx)*2+1] = ((g>>3)&3)<<6 | (b>>3)<<1 | (a)?1:0;
+		}
+	free(ptmp);
+//	glReadPixels(x, gr_screen.max_h-y-1-h, w, h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, Gr_opengl_mouse_saved_data);
+	#else
 	glReadBuffer(GL_BACK);
 	glReadPixels(x, gr_screen.max_h-y-1-h, w, h, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, Gr_opengl_mouse_saved_data);
+	#endif
 	
 	Gr_opengl_mouse_saved = 1;
 }
@@ -2785,13 +3063,23 @@ int gr_opengl_save_screen()
 		return -1;
 	}
 
+	#ifdef HAVE_GLES
+	int p2width = 1;
+	int p2height = 1;
+	while (p2width<gr_screen.max_w) p2width*=2;
+	while (p2height<gr_screen.max_h) p2height*=2;
+	Gr_saved_screen = (char*)malloc( p2width * p2height * gr_screen.bytes_per_pixel );
+	#else
+	int p2width = gr_screen.max_w;
+	int p2height = gr_screen.max_h;
 	Gr_saved_screen = (char*)malloc( gr_screen.max_w * gr_screen.max_h * gr_screen.bytes_per_pixel );
+	#endif
 	if (!Gr_saved_screen) {
 		mprintf(( "Couldn't get memory for saved screen!\n" ));
 		return -1;
 	}
 
-	char *Gr_saved_screen_tmp = (char*)malloc( gr_screen.max_w * gr_screen.max_h * gr_screen.bytes_per_pixel );
+	char *Gr_saved_screen_tmp = (char*)malloc( p2width * p2height * gr_screen.bytes_per_pixel );
 	if (!Gr_saved_screen_tmp) {
 		mprintf(( "Couldn't get memory for temporary saved screen!\n" ));
 		return -1;
@@ -2799,36 +3087,55 @@ int gr_opengl_save_screen()
 	
 	gr_opengl_set_state(TEXTURE_SOURCE_NO_FILTERING, ALPHA_BLEND_NONE, ZBUFFER_TYPE_NONE);
 	
+	#ifdef HAVE_GLES
+	ubyte *ptmp=(ubyte*)malloc(p2width * p2height * 4);
+	glReadPixels(0, 0, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, ptmp);
+	ubyte r,g,b,a;
+	for (int yy=0; yy<p2height; yy++)
+		for (int xx=0; xx<p2width; xx++) {
+			r=ptmp[(yy*p2width+xx)*4+0];
+			g=ptmp[(yy*p2width+xx)*4+1];
+			b=ptmp[(yy*p2width+xx)*4+2];
+			a=ptmp[(yy*p2width+xx)*4+3];
+			Gr_saved_screen_tmp[(yy*p2width+xx)*2+0] = (r>>3)<<3 | (g>>3)>>2;
+			Gr_saved_screen_tmp[(yy*p2height+xx)*2+1] = ((g>>3)&3)<<6 | (b>>3)<<1 | (a)?1:0;
+		}
+	free(ptmp);
+//	glReadPixels(0, 0, gr_screen.max_w, gr_screen.max_h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, Gr_saved_screen_tmp);
+	#else
 	glReadBuffer(GL_FRONT);
 	glReadPixels(0, 0, gr_screen.max_w, gr_screen.max_h, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV, Gr_saved_screen_tmp);
+	#endif
 	
 	ubyte *sptr, *dptr;
 	
-	sptr = (ubyte *)&Gr_saved_screen_tmp[gr_screen.max_w*gr_screen.max_h*2];
+	sptr = (ubyte *)&Gr_saved_screen_tmp[p2width*p2height*2];
+//	sptr = (ubyte *)&Gr_saved_screen_tmp[gr_screen.max_w*gr_screen.max_h*2];
 	dptr = (ubyte *)Gr_saved_screen;
-	for (int j = 0; j < gr_screen.max_h; j++) {
-		sptr -= gr_screen.max_w*2;
-		memcpy(dptr, sptr, gr_screen.max_w*2);
-		dptr += gr_screen.max_w*2;
+//	for (int j = 0; j < gr_screen.max_h; j++) {
+	for (int j = 0; j < p2height; j++) {
+		sptr -= p2width*2;
+		memcpy(dptr, sptr, p2width*2);
+		dptr += p2width*2;
 	}
 	
 	free(Gr_saved_screen_tmp);
 	
 	if (Gr_opengl_mouse_saved) {
 		sptr = (ubyte *)Gr_opengl_mouse_saved_data;
-		dptr = (ubyte *)&Gr_saved_screen[2*(Gr_opengl_mouse_saved_x1+(Gr_opengl_mouse_saved_y2)*gr_screen.max_w)];
+		dptr = (ubyte *)&Gr_saved_screen[2*(Gr_opengl_mouse_saved_x1+(Gr_opengl_mouse_saved_y2)*p2width)];
 		for (int i = 0; i < Gr_opengl_mouse_saved_h; i++) {
 			memcpy(dptr, sptr, Gr_opengl_mouse_saved_w*2);
 		
 			sptr += 32*2;
-			dptr -= gr_screen.max_w*2;
+			dptr -= p2width*2;
 		}
 	}
 
 	// this leaks texture handles, and the opengl doesn't currently 
 	// perform some sort of garbage collection, so a hack was added
 	// to bmpman to make it free textures when released
-	Gr_saved_screen_bitmap = bm_create(16, gr_screen.max_w, gr_screen.max_h, Gr_saved_screen, 0);
+	Gr_saved_screen_bitmap = bm_create(16, p2width, p2height, Gr_saved_screen, 0);
 	
 	return Gr_saved_screen_bitmap;
 }
@@ -2911,6 +3218,15 @@ void gr_opengl_init()
 		fprintf (stderr, "Couldn't init SDL: %s", SDL_GetError());
 		exit (1);
 	}
+	#ifdef HAVE_GLES
+	EGL_Open();
+	int flags = 0;
+	#ifdef PANDORA
+	flags=SDL_FULLSCREEN;
+//	gr_screen.max_w = 800;
+//	gr_screen.max_h = 480;
+	#endif
+	#else
 
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
@@ -2919,7 +3235,7 @@ void gr_opengl_init()
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	
 	int flags = SDL_OPENGL;
-	
+	#endif
 	if (!Cmdline_window && ( (os_config_read_uint( NULL, "Fullscreen", 1 ) == 1) || Cmdline_fullscreen ))
 		flags |= SDL_FULLSCREEN;
 
@@ -2928,24 +3244,32 @@ void gr_opengl_init()
 		SDL_WM_GrabInput(SDL_GRAB_ON);
 	}
 
+	#ifndef HAVE_GLES
 	FSAA = os_config_read_uint( NULL, "FSAA", 1 );
 	if ( FSAA ) {
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, FSAA );
 	}
-	
+	#endif
 	if (SDL_SetVideoMode (gr_screen.max_w, gr_screen.max_h,0,flags) == NULL)
 	{
+		#ifndef HAVE_GLES
 	    mprintf(( "Couldn't set FSAA video mode: %s\n", SDL_GetError () ));
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
 	    SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
 		
 	    if (SDL_SetVideoMode (gr_screen.max_w, gr_screen.max_h,0,flags) == NULL)
 	    {
+		#endif
 		    fprintf (stderr, "Couldn't set video mode: %s\n", SDL_GetError ());
 		    exit (1);
+		#ifndef HAVE_GLES
 	    }
+		#endif
 	}
+	#ifdef HAVE_GLES
+	EGL_Init();
+	#endif
 
 	mprintf(( "Screen BPP: %d\n", SDL_GetVideoSurface()->format->BitsPerPixel ));
 	mprintf(( "\n" ));
@@ -2982,9 +3306,11 @@ void gr_opengl_init()
 	mprintf(( "\n" ));
 #endif
 	
+	int bpp = 15;	
+	
+	#ifndef HAVE_GLES
 	int value;
 	int rgb_size[3];
-	int bpp = 15;
 	rgb_size[0]=5;
 	rgb_size[1]=5;
 	rgb_size[2]=5;
@@ -3006,6 +3332,7 @@ void gr_opengl_init()
 		SDL_GL_GetAttribute( SDL_GL_MULTISAMPLESAMPLES, &value );
 		mprintf(( "SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", FSAA, value ));
 	}
+	#endif
 
 	SDL_ShowCursor(0);
 	SDL_WM_SetCaption (Osreg_title, NULL);
@@ -3015,8 +3342,11 @@ void gr_opengl_init()
 #endif
 
 	GL_use_luminance_alpha = os_config_read_uint(NOX("OpenGL"), NOX("UseLuminanceAlpha"), 0);
-
+#ifdef PANDORA
+	glViewport(80, 0, gr_screen.max_w, gr_screen.max_h);
+#else
 	glViewport(0, 0, gr_screen.max_w, gr_screen.max_h);
+#endif
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

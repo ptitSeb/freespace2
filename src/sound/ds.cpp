@@ -1506,8 +1506,13 @@ int ds_init(int use_a3d, int use_eax)
 	ds_sound_device = alcOpenDevice( initStr );
 
 	if (ds_sound_device == NULL) {
-		nprintf(("Sound", "SOUND ==> Couldn't open OpenAL device\n"));
-		return -1;
+	// try with default device
+		ds_sound_device = alcOpenDevice( NULL );
+
+		if (ds_sound_device == NULL) {
+			nprintf(("Sound", "SOUND ==> Couldn't open OpenAL device\n"));
+			return -1;
+		}
 	}
 
 	// Create Sound Device
