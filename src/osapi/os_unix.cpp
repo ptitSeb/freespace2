@@ -316,8 +316,17 @@ void os_poll()
 		switch (e.type) {
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
-				if (e.button.button <= HIGHEST_MOUSE_BUTTON)
-					mouse_mark_button(e.button.button, e.button.state);
+				switch(e.button.button) {
+					case SDL_BUTTON_RIGHT:
+						mouse_mark_button(MOUSE_RIGHT_BUTTON, e.button.state);
+						break;
+					case SDL_BUTTON_MIDDLE:
+						mouse_mark_button(MOUSE_MIDDLE_BUTTON, e.button.state);
+						break;
+					case SDL_BUTTON_LEFT:
+						mouse_mark_button(MOUSE_LEFT_BUTTON, e.button.state);
+						break;
+				}
 				break;
 			case SDL_KEYDOWN:
 				if ((e.key.keysym.mod & KMOD_ALT) &&
