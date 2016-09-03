@@ -10,9 +10,7 @@ http://www.icculus.org/freespace2/
 Based on the Freespace 2 source code:
 Copyright (C) Volition, Inc. 1999.  All rights reserved.
 
-All source code herein is the property of Volition, Inc. You may not sell
-or otherwise commercially exploit the source or things you created based on
-the source.
+All source code herein is the property of Volition, Inc. You may not sell or otherwise commercially exploit the source or things you created based on the source.
 ----------------------------------------------
 
 # How to Compile
@@ -24,10 +22,11 @@ just type
 make
 ```
 
-To build ODroid version, add `ODROID=true`
-To get Linux version add `PANDORA=false`
-To build a Demo version, add `DEMO=true`
-To build FreeSpace 1 add `FS1=true`
+To build:
+- ODroid version, add `ODROID=true`
+- Linux version add `PANDORA=false`
+- a Demo version, add `DEMO=true`
+- FreeSpace 1 add `FS1=true`
 
 Multiple option can be combined. So for example to build a release FreeSpace 1 version for ODroid, use
 ```bash
