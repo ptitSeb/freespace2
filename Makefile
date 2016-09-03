@@ -18,11 +18,10 @@ endif
 CC=g++
 AR=ar
 RANLIB=ranlib
-CODE_BINARY=code.a
 FS_BINARY=freespace2
 FS_DEMO_BINARY=freespace2_demo
 LDFLAGS=$(shell sdl-config --libs) -lopenal
-CFLAGS=-Wall -g -DPLAT_UNIX $(shell sdl-config --cflags) -Iinclude/ # -fwritable-strings
+CFLAGS=-g -DPLAT_UNIX $(shell sdl-config --cflags) -Iinclude/ # -fwritable-strings -Wall 
 CFLAGS+=-fsigned-char -Wno-format-y2k
 ifeq ($(strip $(PANDORA)),true)
 	CFLAGS+=-ffast-math -pipe -mcpu=cortex-a8 -mfpu=neon -ftree-vectorize -mfloat-abi=softfp -fsingle-precision-constant -mno-unaligned-access -fpermissive
@@ -343,13 +342,21 @@ ifeq ($(strip $(HAVE_GLES)),true)
 	CODE_SOURCES +=./src/graphics/eglport.cpp
 endif
 
-POSTFIX=fs2
 ifeq ($(strip $(FS1)), true)
- POSTFIX=fs1
+ ifeq ($(strip $(DEMO)), true)
+  POSTFIX=fs1.demo
+ else
+  POSTFIX=fs1
+ endif
+else
+ ifeq ($(strip $(DEMO)), true)
+  POSTFIX=fs2.demo
+ else
+  POSTFIX=fs2
+ endif
 endif
-ifeq ($(strip $(DEMO)), true)
- POSTFIX=$(POSTFIX).demo
-endif
+
+CODE_BINARY=code.$(POSTFIX).a
 
 CODE_OBJECTS=$(CODE_SOURCES:.cpp=.$(POSTFIX).o)
 FS_OBJECTS=$(FS_SOURCES:.cpp=.$(POSTFIX).o)
