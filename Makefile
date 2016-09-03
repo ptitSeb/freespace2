@@ -1,15 +1,15 @@
 # Makefile for code module
 # for that freespace 2 thing
 
-MACOSX=false
-FS1=false
-DEMO=false
+MACOSX?=false
+FS1?=false
+DEMO?=false
 
 DEBUG=false
 
 ODROID?=false
-PANDORA=true
-HAVE_GLES=true
+PANDORA?=true
+HAVE_GLES?=false
 
 ifeq ($(strip $(ODROID)),true)
 	PANDORA=false

@@ -14,6 +14,27 @@ or otherwise commercially exploit the source or things you created based on
 the source.
 ----------------------------------------------
 
+# How to Compile
+
+
+By default, the PANDORA version of Freespace 2 will be compiled.
+just type
+```bash
+make
+```
+
+To build ODroid version, add `ODROID=true`
+To get Linux version add `PANDORA=false`
+To build a Demo version, add `DEMO=true`
+To build FreeSpace 1 add `FS1=true`
+
+Multiple option can be combined. So for example to build a release FreeSpace 1 version for ODroid, use
+```bash
+make ODROID=true FS1=true
+```
+
+# Original Readme
+
 06/18/2002
 
 Current status:
