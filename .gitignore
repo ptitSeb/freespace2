@@ -1,6 +1,9 @@
 *.o
 *.a
-./freespace
-./freespace2
+freespace
+freespace2
 *.MVE
 *.vp
+*.mve
+Data
+Cache
