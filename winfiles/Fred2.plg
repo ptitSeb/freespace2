@@ -1,0 +1,77 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: fred2 - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\WINDOWS\TEMP\RSPA095.TMP" with contents
+[
+winmm.lib vfw32.lib msacm32.lib code.lib wsock32.lib /nologo /subsystem:windows /incremental:no /pdb:"Fred2.pdb" /machine:I386 /nodefaultlib:"libc.lib" /nodefaultlib:"libcd.lib" /nodefaultlib:"libcmtd.lib" /nodefaultlib:"nafxcwd.lib" /out:"E:\games\Freespace2\Fred2.exe" /libpath:"release" 
+.\Release\AddVariableDlg.obj
+.\Release\AdjustGridDlg.obj
+.\Release\AsteroidEditorDlg.obj
+.\Release\BgBitmapDlg.obj
+.\Release\BriefingEditorDlg.obj
+.\Release\CampaignEditorDlg.obj
+.\Release\CampaignFilelistBox.obj
+.\Release\CampaignTreeView.obj
+.\Release\CampaignTreeWnd.obj
+.\Release\CmdBrief.obj
+.\Release\CreateWingDlg.obj
+.\Release\DebriefingEditorDlg.obj
+.\Release\dialog1.obj
+.\Release\DumpStats.obj
+.\Release\EventEditor.obj
+.\Release\FRED.obj
+.\Release\FREDDoc.obj
+.\Release\FredRender.obj
+.\Release\FredStubs.obj
+.\Release\FREDView.obj
+.\Release\Grid.obj
+.\Release\IgnoreOrdersDlg.obj
+.\Release\InitialShips.obj
+.\Release\InitialStatus.obj
+.\Release\MainFrm.obj
+.\Release\Management.obj
+.\Release\MessageEditorDlg.obj
+.\Release\MissionGoalsDlg.obj
+.\Release\MissionNotesDlg.obj
+.\Release\MissionSave.obj
+.\Release\ModifyVariableDlg.obj
+.\Release\OperatorArgTypeSelect.obj
+.\Release\OrientEditor.obj
+.\Release\PlayerStartEditor.obj
+.\Release\PrefsDlg.obj
+.\Release\ReinforcementEditorDlg.obj
+.\Release\Sexp_tree.obj
+.\Release\ShieldSysDlg.obj
+.\Release\ship_select.obj
+.\Release\ShipCheckListBox.obj
+.\Release\ShipClassEditorDlg.obj
+.\Release\ShipEditorDlg.obj
+.\Release\ShipFlagsDlg.obj
+.\Release\ShipGoalsDlg.obj
+.\Release\ShipSpecialDamage.obj
+.\Release\StarfieldEditor.obj
+.\Release\StdAfx.obj
+.\Release\TextViewDlg.obj
+.\Release\WaypointPathDlg.obj
+.\Release\WeaponEditorDlg.obj
+.\Release\wing.obj
+.\Release\wing_editor.obj
+.\Release\FRED.res
+.\Release\code.lib
+]
+Creating command line "link.exe @C:\WINDOWS\TEMP\RSPA095.TMP"
+<h3>Output Window</h3>
+Linking...
+
+
+
+<h3>Results</h3>
+Fred2.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
