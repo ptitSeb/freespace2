@@ -1287,6 +1287,34 @@ void control_config_reset_defaults()
 		Axis_map_to[i] = control_config_axis_default(i);
 		Invert_axis[i] = Invert_axis_defaults[i];
 	}
+ 	#ifdef PANDORA
+ 	// put some better default for Pandora
+ 	Control_config[FIRE_PRIMARY].key_id = KEY_RCTRL;
+ 	Control_config[FIRE_SECONDARY].key_id = KEY_SHIFTED | KEY_RCTRL;
+ 	Control_config[CYCLE_NEXT_PRIMARY].key_id = KEY_2;
+ 	Control_config[CYCLE_PREV_PRIMARY].key_id = KEY_3;
+ 	Control_config[CYCLE_SECONDARY].key_id = KEY_W;
+ 	Control_config[CYCLE_NUM_MISSLES].key_id = KEY_Q;
+ 	Control_config[FORWARD_THRUST].key_id = KEY_UP;
+ 	Control_config[REVERSE_THRUST].key_id = KEY_DOWN;
+ 	Control_config[BANK_LEFT].key_id = KEY_LEFT;
+ 	Control_config[BANK_RIGHT].key_id = KEY_RIGHT;
+ 	Control_config[MAX_THROTTLE].key_id = KEY_0;
+ 	Control_config[PLUS_5_PERCENT_THROTTLE].key_id = KEY_PERIOD;
+ 	Control_config[MINUS_5_PERCENT_THROTTLE].key_id = KEY_COMMA;
+ 	Control_config[AFTERBURNER].key_id = KEY_1;
+ 	Control_config[SHIELD_EQUALIZE].key_id = KEY_SHIFTED | KEY_Q;
+ 	Control_config[SHIELD_XFER_TOP].key_id = KEY_SHIFTED | KEY_UP;
+ 	Control_config[SHIELD_XFER_BOTTOM].key_id = KEY_SHIFTED | KEY_DOWN;
+ 	Control_config[SHIELD_XFER_LEFT].key_id = KEY_SHIFTED | KEY_LEFT;
+ 	Control_config[SHIELD_XFER_RIGHT].key_id = KEY_SHIFTED | KEY_RIGHT;
+ 	Control_config[XFER_SHIELD].key_id = KEY_8;
+ 	Control_config[XFER_LASER].key_id = KEY_SHIFTED | KEY_8;
+ 	Control_config[MULTI_MESSAGE_ALL].key_id = KEY_ALTED | KEY_1;
+ 	Control_config[MULTI_MESSAGE_FRIENDLY].key_id = KEY_ALTED | KEY_2;
+ 	Control_config[MULTI_MESSAGE_HOSTILE].key_id = KEY_ALTED | KEY_3;
+ 	Control_config[MULTI_MESSAGE_TARGET].key_id = KEY_ALTED	| KEY_4;
+ 	#endif
 }
 
 void control_config_scroll_screen_up()
