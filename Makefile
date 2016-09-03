@@ -365,7 +365,7 @@ ifeq ($(strip $(MACOSX)),true)
 endif
 
 $(FS_BINARY): $(CODE_BINARY) $(FS_OBJECTS)
-	$(CC) -o $(FS_BINARY) $(LDFLAGS) $(FS_OBJECTS) $(CODE_BINARY)
+	$(CC) -o $(FS_BINARY) $(FS_OBJECTS) $(CODE_BINARY) $(LDFLAGS)
 
 cryptstring:
 	$(CC) -o cryptstring $(CFLAGS) src/cryptstring/cryptstring.cpp
