@@ -36,30 +36,30 @@ make ODROID=true FS1=true
 # GoG Data
 On Linux, you can use the Windows Good Old Game (GoG) version to extract the datas.
 You will innoextract for that. It should be availbale in your distro, or just compile from sources.
+Just put all vp and MEV/mve files in the same folder as the freespace binary.
 
 To extract FreeSpace - The Great War in current folder, use this script:
 ```bash
 innoextract -I app setup_freespace_*.exe
-mv "app/*.vp" .
-mv app/Cache .
-mv app/Data .
-mv app/data1/Data/* Data/
-mv app/data2/data/movies/* Data/movies/
+mv app/*.vp .
+mv app/Data/*.vp .
+mv app/Data/movies/*.mve .
+mv app/Data/movies/*.MVE .
+mv app/data1/Data/*.vp .
+mv app/data2/data/movies/* .
 rm app/data2/data/movies -rf
-mv app/data2/data/* Data/
+mv app/data2/data/*.vp .
 rm app -rf
-mv Data/movies/*.mve .
-mv Data/movies/*.MVE .
 ```
 
 For the FreeSpace 2 data, you can use this one:
 ```bash
 innoextract -I app setup_freespace2_*.exe
-mv "app/*.vp" .
-mv "app/data2/*.vp" .
-mv "app/data2/*.MVE" .
-mv "app/data3/*.vp" .
-mv "app/data3/*.MVE" .
+mv app/*.vp .
+mv app/data2/*.vp .
+mv app/data2/*.MVE .
+mv app/data3/*.vp .
+mv app/data3/*.MVE .
 rm app -rf
 ```
 
