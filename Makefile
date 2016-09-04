@@ -5,7 +5,7 @@ MACOSX?=false
 FS1?=false
 DEMO?=false
 
-DEBUG=false
+DEBUG?=false
 
 ODROID?=false
 PANDORA?=true

@@ -2125,7 +2125,7 @@ void ai_process_mission_orders( int objnum, ai_info *aip )
 
 	case AI_GOAL_CHASE_WING:
 		wingnum = wing_name_lookup( current_goal->ship_name );
-		ai_attack_wing(objp, wingnum, current_goal->priority);
+		if (wingnum != -1) ai_attack_wing(objp, wingnum, current_goal->priority); //Thanks Loic2003, fixing a segfault on early mission of freespace2
 		break;
 
 	case AI_GOAL_CHASE_ANY:
