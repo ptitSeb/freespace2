@@ -78,7 +78,7 @@
  */
 
 #ifdef PLAT_UNIX	// to end of file...
-
+#include <stdint.h>
 #include "pstypes.h"
 #include "audiostr.h"
 #include "ds.h"
@@ -150,11 +150,11 @@ class Timer
 public:
     void constructor(void);
     void destructor(void);
-    BOOL Create (UINT nPeriod, UINT nRes, DWORD dwUser,  TIMERCALLBACK pfnCallback);
+    BOOL Create (UINT nPeriod, UINT nRes, uintptr_t dwUser,  TIMERCALLBACK pfnCallback);
 protected:
 	static Uint32 CALLBACK TimeProc(Uint32 interval, void *dwUser);
     TIMERCALLBACK m_pfnCallback;
-    DWORD m_dwUser;
+    uintptr_t m_dwUser;
     UINT m_nPeriod;
     UINT m_nRes;
     SDL_TimerID m_nIDTimer;
@@ -285,7 +285,7 @@ void Timer::destructor(void)
 }
 
 // Create
-BOOL Timer::Create (UINT nPeriod, UINT nRes, DWORD dwUser, TIMERCALLBACK pfnCallback)
+BOOL Timer::Create (UINT nPeriod, UINT nRes, uintptr_t dwUser, TIMERCALLBACK pfnCallback)
 {
 	BOOL bRtn = SUCCESS;    // assume success
 
